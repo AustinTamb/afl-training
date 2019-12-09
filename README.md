@@ -5,6 +5,11 @@ The LICENSE and README (content below the instructions) header have been left as
 
 These changes have been made in order to produce results demonstrating that issues such as Heartbleed may be found through fuzzing code. 
 
+# Installing Dependencies (using apt)
+
+Use the following to install all dependencies for afl:
+		sudo apt-get install build-essential clang gcc gdb afl
+
 # Instructions
 
 This is adapted from the libFuzzer example here: https://github.com/google/fuzzer-test-suite/tree/master/openssl-1.0.1f
