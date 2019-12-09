@@ -44,3 +44,10 @@ The following is the line used to start fuzzing and collect the data presented i
 
 		afl-fuzz -i in -o out -m none ./handshake
 
+
+# Notes
+
+Before running, ensure that have an in and out directory as well as at least one test case. You can do so by using:
+
+		mkdir in out
+		echo "Heartbleed" > in/testcase
