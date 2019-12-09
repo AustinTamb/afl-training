@@ -11,8 +11,8 @@ This is adapted from the libFuzzer example here: https://github.com/google/fuzze
 
 - Get the openSSL source for version OpenSSL_1_0_1f:
 
-    git submodule init
-    git submodule update
+		git submodule init
+		git submodule update
 
 - Configure and build with ASAN:
 
@@ -25,7 +25,7 @@ Now fix up the code in handshake.cc to work with afl.  (or copy it out of ANSWER
 
 Build our target:
 
-	AFL_USE_ASAN=1 afl-clang-fast++ -g handshake.cc openssl/libssl.a openssl/libcrypto.a -o handshake -I openssl/include -ldl
+		AFL_USE_ASAN=1 afl-clang-fast++ -g handshake.cc openssl/libssl.a openssl/libcrypto.a -o handshake -I openssl/include -ldl
 
 
 # Running
@@ -34,7 +34,7 @@ The following has been copy pasted from a file original called hints.
 
 Because we're using ASAN, we need to run this in a slightly different way, see docs/notes_for_asan.txt:
 
-	sudo ~/afl-2.52b/experimental/asan_cgroups/limit_memory.sh -u fuzzer afl-fuzz -i in -o out -m none ./handshake
+		sudo ~/afl-2.52b/experimental/asan_cgroups/limit_memory.sh -u fuzzer afl-fuzz -i in -o out -m none ./handshake
 
 An alternative is to not use the limit_memory script, and instead pass `-m none` to afl-fuzz. This runs the risk of the target allocating a huge amount of memory, and Linux will then start killing processes underneath you.
 
@@ -42,5 +42,5 @@ An alternative is to not use the limit_memory script, and instead pass `-m none`
 
 The following is the line used to start fuzzing and collect the data presented in our slides:
 
-	afl-fuzz -i in -o out -m none ./handshake
+		afl-fuzz -i in -o out -m none ./handshake
 
