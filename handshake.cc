@@ -37,8 +37,16 @@ int main() {
   SSL_set_bio(server, sinbio, soutbio);
   SSL_set_accept_state(server);
 
-  /* TODO: To spoof one end of the handshake, we need to write data to sinbio
-   * here */
+  #ifdef __AFL_HAVE_MANUAL_CONTROL
+    __AFL_INIT();
+  #endif
+
+  uint8_t data[100] = {0};
+  size_t size = read(STDIN_FILENO, data, 100);
+  if (size == -1) {
+    printf("Failed to read from stdin\n");
+    return(-1);
+  }
   BIO_write(sinbio, data, size);
 
   SSL_do_handshake(server);

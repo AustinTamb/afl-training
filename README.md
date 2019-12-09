@@ -1,50 +1,46 @@
-# Fuzzing with AFL workshop
-Materials of the "Fuzzing with AFL" workshop by Michael Macnair (@michael_macnair).
+# Notice
+This is a fork from https://github.com/mykter/afl-training which contains the material from "Fuzzing with AFL" workshop by Micheal Macnair (@micheal_macnair). The workshop has been completed and should only require following the steps below. 
 
-The first public version of this workshop was presented at SteelCon 2017 and it was revised for BSides London and Bristol 2019.
+The LICENSE and README (content below the instructions) header have been left as they were when forking.
 
-# Pre-requisites
-- 3-4 hours (more to complete all the challenges)
-- Linux machine
-- Basic C and command line experience - ability to modify and compile C programs.
-- Docker, or the dependencies described in `quickstart`.
+These changes have been made in order to produce results demonstrating that issues such as Heartbleed may be found through fuzzing code. 
 
-# Contents
-- quickstart - Do this first! A tiny sample program to get started with fuzzing, including instructions on how to setup your machine.
-- harness - the basics of creating a test harness. Do this if you have any doubts about the "plumbing" between afl-fuzz and the target code.
-- challenges - a set of known-vulnerable programs with fuzzing hints
-- docker - Instructions and Dockerfile for preparing a suitable environment, and hosting it on AWS if you wish. A prebuilt image is on Docker Hub at [mykter/afl-training](https://hub.docker.com/r/mykter/afl-training).
+# Instructions
 
-See the other READMEs for more information.
+This is adapted from the libFuzzer example here: https://github.com/google/fuzzer-test-suite/tree/master/openssl-1.0.1f
 
-# Challenges
+- Get the openSSL source for version OpenSSL_1_0_1f:
 
-Challenges, roughly in recommended order, with any specific aspects they cover:
-- libxml2 - an ideal target, using ASAN and persistent mode.
-- heartbleed - infamous bug, using ASAN.
-- sendmail/1301 - parallel fuzzing
-- date - fuzzing environment variable input
-- ntpq - fuzzing a network client; coverage analysis and increasing coverage
-- cyber-grand-challenge - an easy vuln and an example of a hard to find vuln using afl
-- sendmail/1305 - persistent mode difficulties
+    git submodule init
+    git submodule update
 
-The challenges have HINTS.md and ANSWERS.md files - these contain useful information about fuzzing different targets even if you're not going to attempt the challenge.
+- Configure and build with ASAN:
 
-All of the challenges use real vulnerabilities from open source projects (the CVEs are identified in the descriptions), with the exception of the Cyber Grand Challenge extract, which is a synthetic vulnerability.
+		cd openssl
+		CC=afl-clang-fast CXX=afl-clang-fast++ ./config -d
+		AFL_USE_ASAN=1 make
+(note you can do "make -j" for faster builds, but there is a race that makes this fail occasionally)
 
-The chosen bugs are all fairly well isolated, and (except where noted) are very amenable to fuzzing. This means that you should be able to discover the bugs with a relatively small amount of compute time - these won't take core-days, most of them will take core-minutes. That said, fuzz testing is be definition a random process, so there's no guarantee how long it will take to find a particular bug, just a probability distribution.
+Now fix up the code in handshake.cc to work with afl.  (or copy it out of ANSWERS.md!)
 
-# Slides
+Build our target:
 
-Via [Google slides](https://drive.google.com/file/d/1g78GgmMtxn_Aei2L1K6UzaCQmjaqiUNj/view?usp=sharing) and in [PowerPoint format](https://github.com/mykter/afl-training/files/3325293/Fuzzing.with.AFL.pptx). There is extra information in the speaker notes.
+	AFL_USE_ASAN=1 afl-clang-fast++ -g handshake.cc openssl/libssl.a openssl/libcrypto.a -o handshake -I openssl/include -ldl
 
-# Links
 
-- The afl docs/ directory
-- Ben Nagy’s “Finding Bugs in OS X using AFL” [video](https://vimeo.com/129701495)
-- The [afl-users mailing list](https://groups.google.com/forum/#!forum/afl-users)
-- The smart fuzzer revolution (talk on the future of fuzzing): [video](https://www.youtube.com/watch?v=g1E2Ce5cBhI) / [slides](https://docs.google.com/presentation/d/1FgcMRv_pwgOh1yL5y4GFsl1ozFwd6PMNGlMi2ONkGec/edit#slide=id.g13a9c1bce4_6_0)
-- [libFuzzer](http://llvm.org/docs/LibFuzzer.html)
-    - [libFuzzer workshop](https://github.com/Dor1s/libfuzzer-workshop)
-    - [libFuzzer tutorial](https://github.com/google/fuzzer-test-suite/blob/master/tutorial/libFuzzerTutorial.md)
+# Running
+
+The following has been copy pasted from a file original called hints.
+
+Because we're using ASAN, we need to run this in a slightly different way, see docs/notes_for_asan.txt:
+
+	sudo ~/afl-2.52b/experimental/asan_cgroups/limit_memory.sh -u fuzzer afl-fuzz -i in -o out -m none ./handshake
+
+An alternative is to not use the limit_memory script, and instead pass `-m none` to afl-fuzz. This runs the risk of the target allocating a huge amount of memory, and Linux will then start killing processes underneath you.
+
+
+
+The following is the line used to start fuzzing and collect the data presented in our slides:
+
+	afl-fuzz -i in -o out -m none ./handshake
 
